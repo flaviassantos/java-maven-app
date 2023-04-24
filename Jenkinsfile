@@ -40,6 +40,8 @@ pipeline {
             steps {
                 script {
                     buildImage('flaviassantos/my-repo:jma-3.0')
+                    dockerLogin()
+                    dockerPush 'flaviassantos/my-repo:jma-3.0'
                 }
             }
         }
