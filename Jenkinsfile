@@ -39,7 +39,7 @@ pipeline {
         stage("build image") {
             steps {
                 script {
-                    buildImage()
+                    buildImage('flaviassantos/my-repo:jma-4.0')
                 }
             }
         }
