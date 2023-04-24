@@ -1,5 +1,6 @@
 #!/usr/bin/env groovy
 
+@Library('jenkins-shared-library')
 def gv
 
 pipeline {
@@ -23,7 +24,7 @@ pipeline {
                 }
             }
         }
-        stage("build") {
+        stage("build jar") {
             when {
                 expression {
                     BRANCH_NAME == 'master'
@@ -31,14 +32,14 @@ pipeline {
             }
             steps {
                 script {
-                    gv.buildJar()
+                    buildJar()
                 }
             }
         }
         stage("build image") {
             steps {
                 script {
-                    gv.buildImage()
+                    buildImage('flaviassantos/my-repo:jma-3.0')
                 }
             }
         }
