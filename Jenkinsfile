@@ -11,7 +11,7 @@ pipeline {
                 }
             }
         }
-        stage('build') {
+        stage('build jar') {
             when {
                 expression {
                     BRANCH_NAME == 'master'
