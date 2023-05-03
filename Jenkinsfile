@@ -14,6 +14,9 @@ pipeline {
     tools {
         maven 'Maven'
     }
+    environment {
+        IMAGE_NAME = 'flaviassantos/my-repo:jma-3.0'
+    }
     stages {
         stage("init") {
             steps {
@@ -45,16 +48,16 @@ pipeline {
         stage("build image") {
             steps {
                 script {
-                    buildImage('flaviassantos/my-repo:jma-3.0')
+                    buildImage(env.IMAGE_NAME)
                     dockerLogin()
-                    dockerPush('flaviassantos/my-repo:jma-3.0')
+                    dockerPush(env.IMAGE_NAME)
                 }
             }
         }
         stage("deploy") {
             when {
                 expression {
-                    BRANCH_NAME == 'master'
+                    BRANCH_NAME == 'master' || BRANCH_NAME == 'feature/env_variable'
                 }
             }
             steps {
