@@ -36,7 +36,7 @@ pipeline {
         stage("build jar") {
             when {
                 expression {
-                    BRANCH_NAME == 'master'
+                    BRANCH_NAME == 'master' || BRANCH_NAME == 'feature/env_variable'
                 }
             }
             steps {
