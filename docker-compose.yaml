@@ -1,7 +1,7 @@
 version: '3.8'
 services:
     java-maven-app:
-      image: ${IMAGE_NAME}
+      image: flaviassantos/my-repo:jma-3.0
       ports:
         - 8080:8080
     postgres:
