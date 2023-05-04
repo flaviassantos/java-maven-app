@@ -1,7 +1,10 @@
 def deployApp() {
     sshagent(['ec2-server-key']) {
-        def dockerCmd = "docker run -p 8080:8080 -d ${IMAGE_NAME}"
-        sh "ssh -o StrictHostKeyChecking=no ec2-user@3.64.127.118 ${dockerCmd}"
+        echo 'deploying docker image to EC2...'
+        
+        def dockerComposeCmd = "docker compose -f docker-compose.yaml up --detach"
+        sh "scp docker-compose.yaml ec2-user@3.64.127.118:/home/ec2-user"
+        sh "ssh -o StrictHostKeyChecking=no ec2-user@3.64.127.118 ${dockerComposeCmd}"
 }
 }
 
