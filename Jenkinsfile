@@ -14,14 +14,18 @@ pipeline {
     tools {
         maven 'Maven'
     }
-    environment {
-        IMAGE_NAME = 'flaviassantos/my-repo:jma-3.0'
-    }
     stages {
         stage("init") {
             steps {
                 script {
                     gv = load "script.groovy"
+                }
+            }
+        }
+        stage('increment version') {
+            steps {
+                script {
+                    gv.incrementVersion()
                 }
             }
         }
@@ -36,7 +40,7 @@ pipeline {
         stage("build jar") {
             when {
                 expression {
-                    BRANCH_NAME == 'master' || BRANCH_NAME == 'feature/env_variable'
+                    BRANCH_NAME == 'master'
                 }
             }
             steps {
@@ -57,12 +61,19 @@ pipeline {
         stage("deploy") {
             when {
                 expression {
-                    BRANCH_NAME == 'master' || BRANCH_NAME == 'feature/env_variable'
+                    BRANCH_NAME == 'master'
                 }
             }
             steps {
                 script {
                     gv.deployApp()
+                }
+            }
+        }
+        stage('commit version update'){
+            steps {
+                script {
+                    gv.commitVersionUpdate()
                 }
             }
         }
