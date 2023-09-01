@@ -18,7 +18,7 @@ spec:
         - name: my-registry-key
       containers:
       - name: java-maven-app
-        image: nanajanashia/demo-app:$IMAGE_NAME
+        image: flaviassantos/my-repo:$IMAGE_NAME
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
