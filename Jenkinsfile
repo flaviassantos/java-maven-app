@@ -25,7 +25,7 @@ pipeline {
             steps {
                 script {
                    echo 'deploying docker image...'
-                   sh 'cat ~/.kube/config;kubectl create deployment nginx-deployment --image=nginx'
+                   sh 'cat ~/.kube/config;aws --version;kubectl create deployment nginx-deployment --image=nginx'
                 }
             }
         }
