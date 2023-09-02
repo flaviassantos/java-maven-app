@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: java-maven-app
+  name: $APP_NAME
   labels:
-    app: java-maven-app
+    app: $APP_NAME
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: java-maven-app
+      app: $APP_NAME
   template:
     metadata:
       labels:
-        app: java-maven-app
+        app: $APP_NAME
     spec:
       imagePullSecrets:
         - name: my-registry-key
       containers:
-      - name: java-maven-app
+      - name: $APP_NAME
         image: flaviassantos/my-repo:$IMAGE_NAME
         imagePullPolicy: Always
         ports:

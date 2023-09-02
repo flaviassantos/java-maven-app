@@ -40,13 +40,16 @@ pipeline {
             }
         }
         stage('deploy') {
+            environment {
+               AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
+               AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
+               APP_NAME = 'java-maven-app'
+            }
             steps {
                 script {
-                    withKubeConfig([credentialsId: 'lke-credentials', serverUrl: 'https://8122b546-0ea7-44ce-b427-8128c8d3c9ce.eu-central-1.linodelke.net']) {
-//                         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-//                             sh "kubectl create secret docker-registry my-registry-key --docker-server=docker.io --docker-username=$USER --docker-password=$PASS"
-//                         }
+                        sh echo 'deploying docker image'
                         sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
+                        sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
                     }
                 }
             }
@@ -54,11 +57,15 @@ pipeline {
         stage('commit version update') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'gitlab-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    withCredentials([usernamePassword(credentialsId: 'github-token-as-pwd', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'USER')]) {
                         // git config here for the first time run
                         sh 'git config --global user.email "jenkins@example.com"'
                         sh 'git config --global user.name "jenkins"'
-                        sh "git remote set-url origin https://${USER}:${PASS}@github.com/flaviassantos/java-maven-app.git"
+                        sh "git remote set-url origin https://github.com/flaviassantos/java-maven-app.git"
+
+                        sh "git config credential.helper 'store --file ~/.git-credentials'"
+                        sh "echo \"https://${GITHUB_TOKEN}@github.com\" >> ~/.git-credentials"
+
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump"'
                         sh 'git push origin HEAD:feature/k8s'
@@ -68,3 +75,4 @@ pipeline {
         }
     }
 }
+
