@@ -50,7 +50,6 @@ pipeline {
                         sh echo 'deploying docker image'
                         sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
                         sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
-                    }
                 }
             }
         }
