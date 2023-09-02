@@ -61,14 +61,15 @@ pipeline {
                         // git config here for the first time run
                         sh 'git config --global user.email "jenkins@example.com"'
                         sh 'git config --global user.name "jenkins"'
-                        sh "git remote set-url origin https://github.com/flaviassantos/java-maven-app.git"
 
+                        // using github token (as Jenkins username-password type)
+                        sh "git remote set-url origin https://github.com/flaviassantos/java-maven-app.git"
                         sh "git config credential.helper 'store --file ~/.git-credentials'"
-                        sh "echo \"https://${GITHUB_TOKEN}@github.com\" >> ~/.git-credentials"
+                        sh "echo \"https://github.com:${GITHUB_TOKEN}@github.com\" >> ~/.git-credentials"
 
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump"'
-                        sh 'git push origin HEAD:feature/k8s'
+                        sh 'git push origin HEAD:master'
                     }
                 }
             }
