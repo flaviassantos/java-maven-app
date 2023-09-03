@@ -28,6 +28,7 @@ return this
 def commitVersionUpdate(){
     script {
         withCredentials([usernamePassword(credentialsId: 'github-token-as-pwd', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'USER')]) {
+            
             // git config here for the first time run
             sh 'git config --global user.email "jenkins@example.com"'
             sh 'git config --global user.name "jenkins"'
