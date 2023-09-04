@@ -27,7 +27,7 @@ return this
 
 def commitVersionUpdate(){
     script {
-        withCredentials([usernamePassword(credentialsId: 'github-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+        withCredentials([usernamePassword(credentialsId: 'github-token-as-pwd', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'USER')]) {
             // git config here for the first time run
             sh 'git config --global user.email "jenkins@example.com"'
             sh 'git config --global user.name "jenkins"'
@@ -35,10 +35,10 @@ def commitVersionUpdate(){
             sh 'git status'
             sh 'git config --list'
 
-            sh "git remote set-url origin https://${USER}:${PASS}@github.com/flaviassantos/java-maven-app.git"
+            sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com/${USER}/java-maven-app.git"
             sh 'git add .'
             sh 'git commit -m "ci: version bump"'
-            sh 'git push origin HEAD:version-increment'
+            sh 'git push origin HEAD:master'
         }
     }
 }
