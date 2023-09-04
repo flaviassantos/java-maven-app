@@ -32,8 +32,8 @@ def commitVersionUpdate(){
             sh 'git config --global user.email "jenkins@example.com"'
             sh 'git config --global user.name "jenkins"'
 
-            //sh 'git status'
-            //sh 'git config --list'
+            sh 'git status'
+            sh 'git config --list'
 
             sh "git remote set-url origin https://${USER}:${PASS}@github.com/flaviassantos/java-maven-app.git"
             sh 'git add .'
