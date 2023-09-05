@@ -61,7 +61,7 @@ pipeline {
         stage("deploy") {
             when {
                 expression {
-                    BRANCH_NAME == 'master'
+                    BRANCH_NAME == 'master' | BRANCH_NAME == "feat/deploy-k8s"
                 }
             }
             environment {
