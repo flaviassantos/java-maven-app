@@ -18,7 +18,7 @@ spec:
         - name: aws-registry-key
       containers:
         - name: $APP_NAME
-          image: flaviassantos/my-repo:$IMAGE_NAME
+          image: $DOCKER_REPO:$IMAGE_VERSION
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

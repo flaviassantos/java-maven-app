@@ -5,15 +5,22 @@ def incrementVersion(){
                         versions:commit'
     def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
     def version = matcher[0][1]
-    env.IMAGE_NAME = "flaviassantos/my-repo:$version-$BUILD_NUMBER"
+    env.IMAGE_VERSION = "$version-$BUILD_NUMBER"
 }
 return this
 
 
 def deployApp() {
-    echo 'deploying docker image...'
-    sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
-    sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
+    echo 'deploying docker image to EC2...'
+
+    //def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
+    //def ec2Instance = "ec2-user@3.64.127.118"
+
+    //sshagent(['ec2-server-key']) {
+    //    sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2Instance}:/home/ec2-user"
+    //    sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2Instance}:/home/ec2-user"
+    //   sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
+    //}
 }
 return this
 
@@ -26,7 +33,7 @@ def commitVersionUpdate(){
             sh 'git config --global user.name "jenkins"'
 
             sh 'git status'
-            sh 'git config --list'
+            //sh 'git config --list'
 
             sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com/${USER}/java-maven-app.git"
             sh 'git add .'

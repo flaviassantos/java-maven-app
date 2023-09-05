@@ -1,69 +1,49 @@
 #!/usr/bin/env groovy
 
-library identifier: 'jenkins-shared-library@master', retriever: modernSCM(
-        [$class: 'GitSCMSource',
-         remote: 'https://github.com/flaviassantos/jenkins-shared-library.git',
-         credentialsId: 'gitlab-credentials'
-        ]
-)
-
-def gv
-
 pipeline {
     agent any
     tools {
         maven 'Maven'
     }
+    environment {
+        DOCKER_REPO_SERVER = '716187863110.dkr.ecr.eu-central-1.amazonaws.com'
+        DOCKER_REPO = "${DOCKER_REPO_SERVER}/java-maven-app"
+    }
     stages {
-        stage("init") {
-            steps {
-                script {
-                    gv = load "script.groovy"
-                }
-            }
-        }
         stage('increment version') {
             steps {
                 script {
-                    gv.incrementVersion()
+                    echo 'incrementing app version...'
+                    sh 'mvn build-helper:parse-version versions:set \
+                        -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
+                        versions:commit'
+                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+                    def version = matcher[0][1]
+                    env.IMAGE_VERSION = "$version-$BUILD_NUMBER"
                 }
             }
         }
-        stage('test') {
+        stage('build app') {
+            steps {
+               script {
+                   echo "building the application..."
+                   sh 'mvn clean package'
+               }
+            }
+        }
+        stage('build image') {
             steps {
                 script {
-                    echo "Testing the application..."
-                    echo "Executing pipeline for ${BRANCH_NAME}"
+                    echo "building the docker image..."
+                    withCredentials([usernamePassword(credentialsId: 'ecr-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_VERSION} ."
+                        sh "echo $PASS | docker login -u $USER --password-stdin ${DOCKER_REPO_SERVER}"
+                        sh "docker push ${DOCKER_REPO}:${IMAGE_VERSION}"
+                    }
                 }
             }
         }
-        stage("build jar") {
-            when {
-                expression {
-                    BRANCH_NAME == 'master' | BRANCH_NAME == "feat/deploy-k8s"
-                }
-            }
-            steps {
-                script {
-                    buildJar()
-                }
-            }
-        }
-        stage("build image") {
-            steps {
-                script {
-                    buildImage(env.IMAGE_NAME)
-                    dockerLogin()
-                    dockerPush(env.IMAGE_NAME)
-                }
-            }
-        }
-        stage("deploy") {
-            when {
-                expression {
-                    BRANCH_NAME == 'master' | BRANCH_NAME == "feat/deploy-k8s"
-                }
-            }
+        stage('deploy') {
             environment {
                 AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
                 AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
@@ -71,14 +51,28 @@ pipeline {
             }
             steps {
                 script {
-                    gv.deployApp()
+                    echo 'deploying docker image...'
+                    sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
+                    sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
                 }
             }
         }
-        stage('commit version update'){
+        stage('commit version update') {
             steps {
                 script {
-                    gv.commitVersionUpdate()
+                    withCredentials([usernamePassword(credentialsId: 'github-token-as-pwd', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'USER')]) {
+                        // git config here for the first time run
+                        sh 'git config --global user.email "jenkins@example.com"'
+                        sh 'git config --global user.name "jenkins"'
+
+                        sh 'git status'
+                        sh 'git config --list'
+
+                        sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com/${USER}/java-maven-app.git"
+                        sh 'git add .'
+                        sh 'git commit -m "ci: version bump"'
+                        sh 'git push origin HEAD:master'
+                    }
                 }
             }
         }
