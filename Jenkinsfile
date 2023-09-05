@@ -59,11 +59,21 @@ pipeline {
             }
             steps {
                 script {
-                    buildImage(IMAGE_NAME)
-                    dockerLogin(CREDENTIALS_SERVER)
-                    dockerPush(IMAGE_NAME)
+                    echo "building the docker image..."
+                    withCredentials([usernamePassword(credentialsId: CREDENTIALS_SERVER, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_NAME} ."
+                        sh "echo $PASS | docker login -u $USER --password-stdin ${DOCKER_REPO_SERVER}"
+                        sh "docker push ${DOCKER_REPO}:${IMAGE_NAME}"
+                    }
                 }
             }
+//             steps {
+//                 script {
+//                     buildImage(IMAGE_NAME)
+//                     dockerLogin(CREDENTIALS_SERVER)
+//                     dockerPush(IMAGE_NAME)
+//                 }
+//             }
         }
         stage("deploy") {
 //             when {
