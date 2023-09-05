@@ -60,7 +60,7 @@ pipeline {
             steps {
                 script {
                     buildImage(IMAGE_NAME)
-                    dockerLogin()
+                    dockerLogin(CREDENTIALS_SERVER)
                     dockerPush(IMAGE_NAME)
                 }
             }
