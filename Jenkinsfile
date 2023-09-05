@@ -14,6 +14,13 @@ pipeline {
     tools {
         maven 'Maven'
     }
+    environment {
+        APP_NAME = 'java-maven-app' // 'my-repo'
+        DOCKER_REPO_SERVER = '716187863110.dkr.ecr.eu-central-1.amazonaws.com' // ''
+        DOCKER_REPO_ID = '716187863110.dkr.ecr.eu-central-1.amazonaws.com' //'flaviassantos'
+        DOCKER_REPO = "${DOCKER_REPO_ID}/${APP_NAME}"
+
+    }
     stages {
         stage("init") {
             steps {
@@ -45,6 +52,9 @@ pipeline {
             }
         }
         stage("build image") {
+            environment {
+                IMAGE_NAME = "$DOCKER_REPO:${env.IMAGE_VERSION}"
+            }
             steps {
                 script {
                     buildImage(env.IMAGE_NAME)
@@ -54,15 +64,14 @@ pipeline {
             }
         }
         stage("deploy") {
-            when {
-                expression {
-                    BRANCH_NAME == 'master' | BRANCH_NAME == "test"
-                }
-            }
+//             when {
+//                 expression {
+//                     BRANCH_NAME == 'master' | BRANCH_NAME == "test"
+//                 }
+//             }
             environment {
                 AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
                 AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
-                APP_NAME = 'java-maven-app'
             }
             steps {
                 script {
