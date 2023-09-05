@@ -16,8 +16,10 @@ pipeline {
     }
     environment {
         APP_NAME = 'java-maven-app' // 'my-repo'
+        IMAGE_PULL_SECRETS = 'aws-registry-key' // 'my-registry-key'
+        CREDENTIALS_SERVER = 'ecr-credentials' // 'docker-hub-credentials'
         DOCKER_REPO_SERVER = '716187863110.dkr.ecr.eu-central-1.amazonaws.com' // ''
-        DOCKER_REPO_ID = '716187863110.dkr.ecr.eu-central-1.amazonaws.com' //'flaviassantos'
+        DOCKER_REPO_ID = '716187863110.dkr.ecr.eu-central-1.amazonaws.com' // 'flaviassantos'
         DOCKER_REPO = "${DOCKER_REPO_ID}/${APP_NAME}"
 
     }
@@ -57,9 +59,9 @@ pipeline {
             }
             steps {
                 script {
-                    buildImage(env.IMAGE_NAME)
+                    buildImage(IMAGE_NAME)
                     dockerLogin()
-                    dockerPush(env.IMAGE_NAME)
+                    dockerPush(IMAGE_NAME)
                 }
             }
         }
