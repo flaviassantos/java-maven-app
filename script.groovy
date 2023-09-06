@@ -1,45 +1,19 @@
-def incrementVersion(){
-    echo 'incrementing app version...'
-    sh 'mvn build-helper:parse-version versions:set \
-                        -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
-                        versions:commit'
-    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
-    def version = matcher[0][1]
-    env.IMAGE_VERSION = "$version-$BUILD_NUMBER"
-}
-return this
+def buildJar() {
+    echo "building the application..."
+    sh 'mvn package'
+} 
 
+def buildImage() {
+    echo "building the docker image..."
+    withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+        sh 'docker build -t nanajanashia/demo-app:jma-2.0 .'
+        sh "echo $PASS | docker login -u $USER --password-stdin"
+        sh 'docker push nanajanashia/demo-app:jma-2.0'
+    }
+} 
 
 def deployApp() {
-    echo 'deploying docker image to EC2...'
+    echo 'deploying the application...'
+} 
 
-    //def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
-    //def ec2Instance = "ec2-user@3.64.127.118"
-
-    //sshagent(['ec2-server-key']) {
-    //    sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2Instance}:/home/ec2-user"
-    //    sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2Instance}:/home/ec2-user"
-    //   sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
-    //}
-}
-return this
-
-
-def commitVersionUpdate(){
-    script {
-        withCredentials([usernamePassword(credentialsId: 'github-token-as-pwd', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'USER')]) {
-            // git config here for the first time run
-            sh 'git config --global user.email "jenkins@example.com"'
-            sh 'git config --global user.name "jenkins"'
-
-            sh 'git status'
-            //sh 'git config --list'
-
-            sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com/${USER}/java-maven-app.git"
-            sh 'git add .'
-            sh 'git commit -m "ci: version bump"'
-            sh 'git push origin HEAD:master'
-        }
-    }
-}
 return this
